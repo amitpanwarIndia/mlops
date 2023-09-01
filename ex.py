@@ -18,6 +18,19 @@ import matplotlib.pyplot as plt
 from sklearn import datasets, metrics, svm
 from sklearn.model_selection import train_test_split
 
+
+def split_train_dev_test(X, y, test_size, dev_size):
+    train_size = 1 - dev_size - test_size
+    X_train, X_rem, y_train, y_rem = train_test_split(X, y, train_size=train_size, shuffle=False)
+    new_test_size = test_size / (1 - train_size)    
+    X_dev, X_test, y_dev, y_test = train_test_split(X_rem, y_rem, test_size=new_test_size, shuffle=False)  
+    return X_train, X_dev, X_test, y_train, y_dev, y_test
+
+def predict_and_eval(model, X_test, y_test):
+    predicted = model.predict(X_test)
+    return predicted
+
+
 ###############################################################################
 # Digits dataset
 # --------------
@@ -63,15 +76,16 @@ data = digits.images.reshape((n_samples, -1))
 clf = svm.SVC(gamma=0.001)
 
 # Split data into 50% train and 50% test subsets
-X_train, X_test, y_train, y_test = train_test_split(
-    data, digits.target, test_size=0.5, shuffle=False
+X_train, X_Dev, X_test, y_train, y_dev, y_test  = split_train_dev_test(
+    data, digits.target, test_size=0.1, dev_size=0.1
 )
 
 # Learn the digits on the train subset
 clf.fit(X_train, y_train)
 
 # Predict the value of the digit on the test subset
-predicted = clf.predict(X_test)
+#predicted = clf.predict(X_test)
+predicted = predict_and_eval(clf, X_test, y_test)
 
 ###############################################################################
 # Below we visualize the first 4 test samples and show their predicted
