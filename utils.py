@@ -9,44 +9,46 @@ def split_train_dev_test(X, y, test_size, dev_size):
     return X_train, X_dev, X_test, y_train, y_dev, y_test
 
 def predict_and_eval(model, X_test, y_test):
-    predicted = model.predict(X_test)
-    print(
-    f"Classification report for classifier {model}:\n"
-    f"{metrics.classification_report(y_test, predicted)}\n")
+    predicted = model.predict(X_test)    
+    # f"Classification report for classifier {model}:\n"
+    # f"{metrics.classification_report(y_test, predicted)}\n")
 
-    ###############################################################################
-    # We can also plot a :ref:`confusion matrix <confusion_matrix>` of the
-    # true digit values and the predicted digit values.
+    # ###############################################################################
+    # # We can also plot a :ref:`confusion matrix <confusion_matrix>` of the
+    # # true digit values and the predicted digit values.
 
-    disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
-    disp.figure_.suptitle("Confusion Matrix")
-    print(f"Confusion matrix:\n{disp.confusion_matrix}")
+    # disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
+    # disp.figure_.suptitle("Confusion Matrix")
+    # print(f"Confusion matrix:\n{disp.confusion_matrix}")
 
-    #plt.show()
+    # #plt.show()
 
-    ###############################################################################
-    # If the results from evaluating a classifier are stored in the form of a
-    # :ref:`confusion matrix <confusion_matrix>` and not in terms of `y_true` and
-    # `y_pred`, one can still build a :func:`~sklearn.metrics.classification_report`
-    # as follows:
+    # ###############################################################################
+    # # If the results from evaluating a classifier are stored in the form of a
+    # # :ref:`confusion matrix <confusion_matrix>` and not in terms of `y_true` and
+    # # `y_pred`, one can still build a :func:`~sklearn.metrics.classification_report`
+    # # as follows:
 
 
-    # The ground truth and predicted lists
-    y_true = []
-    y_pred = []
-    cm = disp.confusion_matrix
+    # # The ground truth and predicted lists
+    # y_true = []
+    # y_pred = []
+    # cm = disp.confusion_matrix
 
-    # For each cell in the confusion matrix, add the corresponding ground truths
-    # and predictions to the lists
-    for gt in range(len(cm)):
-        for pred in range(len(cm)):
-            y_true += [gt] * cm[gt][pred]
-            y_pred += [pred] * cm[gt][pred]
+    # # For each cell in the confusion matrix, add the corresponding ground truths
+    # # and predictions to the lists
+    # for gt in range(len(cm)):
+    #     for pred in range(len(cm)):
+    #         y_true += [gt] * cm[gt][pred]
+    #         y_pred += [pred] * cm[gt][pred]
 
-    print(
-        "Classification report rebuilt from confusion matrix:\n"
-        f"{metrics.classification_report(y_true, y_pred)}\n"
-    )
+    # print(
+    #     "Classification report rebuilt from confusion matrix:\n"
+    #     f"{metrics.classification_report(y_true, y_pred)}\n"
+    # )
+
+    accuracy = metrics.accuracy_score(y_test, predicted)
+    return accuracy
 
 def train_model(X_train, y_train, parameters):
     # Create a classifier: a support vector classifier
@@ -56,3 +58,25 @@ def train_model(X_train, y_train, parameters):
     clf.fit(X_train, y_train)
 
     return clf
+
+def tune_hparams(X_train, y_train, X_dev, y_dev, hyper_parameters):
+    optimal_accuracy=-1
+    optimal_model=None
+    for param in hyper_parameters:
+        #print("Current Gamma value={} and Current C value={}".format(current_gamma,C_current))
+        gamma = param[0]
+        C = param[1]
+
+        #train model on different hyper parameters
+        current_model = train_model(X_train, y_train, {'gamma':gamma, 'C': C})
+
+        #predict
+        current_accuracy = predict_and_eval(current_model, X_dev, y_dev)
+        if current_accuracy > optimal_accuracy:
+            #print("new optimal accuracy", current_accuracy)
+            optimal_accuracy = current_accuracy
+            optimal_gamma = gamma
+            optimal_C = C
+            optimal_model = current_model
+    
+    return optimal_gamma, optimal_C, optimal_model, optimal_accuracy

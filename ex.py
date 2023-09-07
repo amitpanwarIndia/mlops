@@ -17,8 +17,13 @@ hand-written digits, from 0-9.
 # Import datasets, classifiers and performance metrics
 from sklearn import datasets, metrics, svm
 from sklearn.model_selection import train_test_split
-from utils import split_train_dev_test, predict_and_eval, train_model
+from utils import split_train_dev_test, predict_and_eval, train_model, tune_hparams
+from itertools import product
 
+gamma = [0.001, 0.01, 0.1, 1, 10, 100]
+C_range = [0.1, 1, 2, 5, 10]
+test_range = [0.1, 0.2, 0.3]
+dev_range = [0.1, 0.2, 0.3]
 
 ###############################################################################
 # Digits dataset
@@ -61,16 +66,36 @@ digits = datasets.load_digits()
 n_samples = len(digits.images)
 data = digits.images.reshape((n_samples, -1))
 
+#hyper parameter tuning
+#h_parameters = dict(product(gamma, C_range,repeat=1))
+h_parameters=list(product(gamma, C_range))
 
-# Split data into 50% train and 30% test and 20% Validate subsets
-X_train, X_Dev, X_test, y_train, y_dev, y_test  = split_train_dev_test(
-    data, digits.target, test_size=0.3, dev_size=0.2
-)
+dataset_combination = list(product(test_range, dev_range))
 
-clf = train_model(X_train, y_train, {'gamma':0.001})
+for dataset in dataset_combination:
+    t_size = dataset[0]
+    d_size = dataset[1]
+    train_size = 1 - t_size - d_size   
 
-# Predict the value of the digit on the test subset
-predict_and_eval(clf, X_test, y_test)
+    # Split data into 50% train and 30% test and 20% Validate subsets
+    X_train, X_dev, X_test, y_train, y_dev, y_test  = split_train_dev_test(
+        data, digits.target, test_size=t_size, dev_size=d_size
+    )
+
+    optimal_gamma, optimal_C, optimal_model, optimal_accuracy = tune_hparams(X_train,y_train,X_dev,y_dev,h_parameters)
+
+    print("optimal Gamma value={} and optimal C value={}".format(optimal_gamma,optimal_C))
+
+    #Either we store model in loop or we train it again based on size of model
+    #clf = train_model(X_train, y_train, {'gamma':optimal_gamma, 'C':optimal_C})
+
+    #Train accuracy
+    train_accuracy = predict_and_eval(optimal_model, X_train, y_train)
+
+    # Predict the value of the digit on the test subset
+    test_accuracy = predict_and_eval(optimal_model, X_test, y_test)
+
+    print("train_size={} train_accuracy={}, dev_size={} dev_accuracy={}, test_size={} test_accuracy={}".format(train_size,train_accuracy,d_size,optimal_accuracy,t_size,test_accuracy))
 
 ###############################################################################
 # Below we visualize the first 4 test samples and show their predicted
