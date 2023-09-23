@@ -95,6 +95,12 @@ for dataset in dataset_combination:
     # Predict the value of the digit on the test subset
     test_accuracy = predict_and_eval(optimal_model, X_test, y_test)
 
+    train_sample = len(X_train)
+    dev_sample = len(X_dev)
+    test_sample = len(X_test)
+
+    print("Training sample={} dev Samples={} test Samples={}".format(train_sample, dev_sample, test_sample))
+
     print("train_size={} train_accuracy={}, dev_size={} dev_accuracy={}, test_size={} test_accuracy={}".format(train_size,train_accuracy,d_size,optimal_accuracy,t_size,test_accuracy))
 
 ###############################################################################
