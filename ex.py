@@ -66,6 +66,10 @@ digits = datasets.load_digits()
 n_samples = len(digits.images)
 data = digits.images.reshape((n_samples, -1))
 
+height, width, _ = digits.images.shape
+
+print("height={} width={}".format(height, width))
+
 #hyper parameter tuning
 #h_parameters = dict(product(gamma, C_range,repeat=1))
 h_parameters=list(product(gamma, C_range))
