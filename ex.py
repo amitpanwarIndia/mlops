@@ -66,6 +66,10 @@ digits = datasets.load_digits()
 n_samples = len(digits.images)
 data = digits.images.reshape((n_samples, -1))
 
+height, width, _ = digits.images.shape
+
+print("height={} width={}".format(height, width))
+
 #hyper parameter tuning
 #h_parameters = dict(product(gamma, C_range,repeat=1))
 h_parameters=list(product(gamma, C_range))
@@ -94,6 +98,12 @@ for dataset in dataset_combination:
 
     # Predict the value of the digit on the test subset
     test_accuracy = predict_and_eval(optimal_model, X_test, y_test)
+
+    train_sample = len(X_train)
+    dev_sample = len(X_dev)
+    test_sample = len(X_test)
+
+    print("Training sample={} dev Samples={} test Samples={}".format(train_sample, dev_sample, test_sample))
 
     print("train_size={} train_accuracy={}, dev_size={} dev_accuracy={}, test_size={} test_accuracy={}".format(train_size,train_accuracy,d_size,optimal_accuracy,t_size,test_accuracy))
 
