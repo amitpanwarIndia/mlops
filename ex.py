@@ -19,6 +19,7 @@ from sklearn import datasets, metrics, svm
 from sklearn.model_selection import train_test_split
 from utils import split_train_dev_test, predict_and_eval, train_model, tune_hparams
 from itertools import product
+from skimage.transform import resize
 
 gamma = [0.001, 0.01, 0.1, 1, 10, 100]
 C_range = [0.1, 1, 2, 5, 10]
@@ -64,9 +65,12 @@ digits = datasets.load_digits()
 
 # flatten the images
 n_samples = len(digits.images)
-data = digits.images.reshape((n_samples, -1))
+r_digits = resize(digits.images, (digits.images.shape[0] // 4, digits.images.shape[1] // 4),
+                       anti_aliasing=True)
 
-height, width, _ = digits.images.shape
+data = r_digits.images.reshape((n_samples, -1))
+
+height, width, _ = r_digits.images.shape
 
 print("height={} width={}".format(height, width))
 
@@ -105,7 +109,7 @@ for dataset in dataset_combination:
 
     print("Training sample={} dev Samples={} test Samples={}".format(train_sample, dev_sample, test_sample))
 
-    print("train_size={} train_accuracy={}, dev_size={} dev_accuracy={}, test_size={} test_accuracy={}".format(train_size,train_accuracy,d_size,optimal_accuracy,t_size,test_accuracy))
+    print("images 4*4, train_size={} train_accuracy={}, dev_size={} dev_accuracy={}, test_size={} test_accuracy={}".format(train_size,train_accuracy,d_size,optimal_accuracy,t_size,test_accuracy))
 
 ###############################################################################
 # Below we visualize the first 4 test samples and show their predicted
