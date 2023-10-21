@@ -1,5 +1,6 @@
 from sklearn import datasets, metrics, svm, tree
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
 
 def split_train_dev_test(X, y, test_size, dev_size):
     train_size = 1 - dev_size - test_size
