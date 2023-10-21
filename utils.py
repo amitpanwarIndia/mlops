@@ -48,7 +48,7 @@ def predict_and_eval(model, X_test, y_test):
     # )
 
     accuracy = metrics.accuracy_score(y_test, predicted)
-    return accuracy
+    return accuracy, predicted
 
 def train_model(X_train, y_train, parameters):
     # Create a classifier: a support vector classifier
