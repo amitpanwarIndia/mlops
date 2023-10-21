@@ -17,9 +17,9 @@ def predict_and_eval(model, X_test, y_test):
     # # We can also plot a :ref:`confusion matrix <confusion_matrix>` of the
     # # true digit values and the predicted digit values.
 
-    # disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
-    # disp.figure_.suptitle("Confusion Matrix")
-    # print(f"Confusion matrix:\n{disp.confusion_matrix}")
+    disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
+    disp.figure_.suptitle("Confusion Matrix")
+    print(f"Confusion matrix:\n{disp.confusion_matrix}")
 
     # #plt.show()
 
