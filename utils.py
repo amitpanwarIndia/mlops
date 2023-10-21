@@ -1,4 +1,4 @@
-from sklearn import datasets, metrics, svm
+from sklearn import datasets, metrics, svm, tree
 from sklearn.model_selection import train_test_split
 
 def split_train_dev_test(X, y, test_size, dev_size):
@@ -59,6 +59,15 @@ def train_model(X_train, y_train, parameters):
 
     return clf
 
+def train_model2(X_train, y_train, parameters):
+    # Create a classifier: a support vector classifier
+    clf = tree.DecisionTreeClassifier(**parameters)
+
+    # Learn the digits on the train subset
+    clf.fit(X_train, y_train)
+
+    return clf
+
 def tune_hparams(X_train, y_train, X_dev, y_dev, hyper_parameters):
     optimal_accuracy=-1
     optimal_model=None
@@ -69,6 +78,29 @@ def tune_hparams(X_train, y_train, X_dev, y_dev, hyper_parameters):
 
         #train model on different hyper parameters
         current_model = train_model(X_train, y_train, {'gamma':gamma, 'C': C})
+
+        #predict
+        current_accuracy = predict_and_eval(current_model, X_dev, y_dev)
+        if current_accuracy > optimal_accuracy:
+            #print("new optimal accuracy", current_accuracy)
+            optimal_accuracy = current_accuracy
+            optimal_gamma = gamma
+            optimal_C = C
+            optimal_model = current_model
+    
+    return optimal_gamma, optimal_C, optimal_model, optimal_accuracy
+
+
+def tune_hparams2(X_train, y_train, X_dev, y_dev, hyper_parameters):
+    optimal_accuracy=-1
+    optimal_model=None
+    for param in hyper_parameters:
+        #print("Current Gamma value={} and Current C value={}".format(current_gamma,C_current))
+        gamma = param[0]
+        C = param[1]
+
+        #train model on different hyper parameters
+        current_model = train_model2(X_train, y_train, {'gamma':gamma, 'C': C})
 
         #predict
         current_accuracy = predict_and_eval(current_model, X_dev, y_dev)
