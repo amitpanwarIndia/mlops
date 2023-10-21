@@ -102,7 +102,7 @@ for dataset in dataset_combination:
     train_accuracy = predict_and_eval(optimal_model, X_train, y_train)
 
     # Predict the value of the digit on the test subset
-    test_accuracy = predict_and_eval(optimal_model, X_test, y_test)
+    test_accuracy, predictions_test = predict_and_eval(optimal_model, X_test, y_test)
 
     train_sample = len(X_train)
     dev_sample = len(X_dev)
@@ -114,9 +114,12 @@ for dataset in dataset_combination:
 
     optimal_gamma, optimal_C, optimal_model, optimal_accuracy = tune_hparams2(X_train,y_train,X_dev,y_dev,h_parameters)
     
-    test_accuracy = predict_and_eval(optimal_model, X_test, y_test)
+    test_accuracy, predictions_candidate = predict_and_eval(optimal_model, X_test, y_test)
 
     print("test_size={} test_accuracy={}".format(t_size,test_accuracy))
+
+    production_confusion_matrix = confusion_matrix(y_test, predictions_test)
+    candidate_confusion_matrix = confusion_matrix(y_test, predictions_candidate)
 
 
 
