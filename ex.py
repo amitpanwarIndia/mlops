@@ -19,6 +19,7 @@ from sklearn import datasets, metrics, svm
 from sklearn.model_selection import train_test_split
 from utils import split_train_dev_test, predict_and_eval, train_model, tune_hparams
 from itertools import product
+from sklearn.tree import DecisionTreeClassifier
 
 gamma = [0.001, 0.01, 0.1, 1, 10, 100]
 C_range = [0.1, 1, 2, 5, 10]
@@ -61,6 +62,10 @@ digits = datasets.load_digits()
 # vector classifier on the train samples. The fitted classifier can
 # subsequently be used to predict the value of the digit for the samples
 # in the test subset.
+
+#new_model = DecisionTreeClassifier()
+
+
 
 # flatten the images
 n_samples = len(digits.images)
@@ -106,6 +111,12 @@ for dataset in dataset_combination:
     print("Training sample={} dev Samples={} test Samples={}".format(train_sample, dev_sample, test_sample))
 
     print("train_size={} train_accuracy={}, dev_size={} dev_accuracy={}, test_size={} test_accuracy={}".format(train_size,train_accuracy,d_size,optimal_accuracy,t_size,test_accuracy))
+
+    optimal_gamma, optimal_C, optimal_model, optimal_accuracy = tune_hparams2(X_train,y_train,X_dev,y_dev,h_parameters)
+    
+    test_accuracy = predict_and_eval(optimal_model, X_test, y_test)
+    print("test_size={} test_accuracy={}".format(t_size,test_accuracy))
+
 
 ###############################################################################
 # Below we visualize the first 4 test samples and show their predicted
