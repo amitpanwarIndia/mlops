@@ -1,4 +1,13 @@
-docker build -t digit_classification .
+#!/bin/bash
 
-docker run -v /home/caladmin/iitj-mlops/projects/mlops/models digit_classification
+podman build -t digit_classification .
 
+mkdir model_view
+
+ls -lh model_view
+
+podman run -v ./model_view:/digits/models digit_classification
+
+ls -lh model_view
+
+rm -rf model_view
