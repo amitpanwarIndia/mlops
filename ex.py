@@ -2,120 +2,83 @@
 ================================
 Recognizing hand-written digits
 ================================
-
 This example shows how scikit-learn can be used to recognize images of
 hand-written digits, from 0-9.
-
 """
 
-# Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
-# License: BSD 3 clause
-
-# Standard scientific Python imports
-#import matplotlib.pyplot as plt
-
-# Import datasets, classifiers and performance metrics
 from sklearn import datasets, metrics, svm
-from sklearn.model_selection import train_test_split
-from utils import split_train_dev_test, predict_and_eval, train_model, tune_hparams
+from utils import preprocess_data, split_train_dev_test, train_model, read_digits, predict_and_eval, get_hyperparameter_combinations, tune_hparams
 from itertools import product
+from joblib import dump, load
+import pandas as pd
 
+X, y = read_digits()
+
+classifier_param_dict = {}
+
+#SVM
 gamma = [0.001, 0.01, 0.1, 1, 10, 100]
 C_range = [0.1, 1, 2, 5, 10]
-test_range = [0.1, 0.2, 0.3]
-dev_range = [0.1, 0.2, 0.3]
+h_params={}
+h_params['gamma'] = gamma
+h_params['C'] = C_range
+h_parameters = get_hyperparameter_combinations(h_params)
+classifier_param_dict['svm'] = h_parameters
 
-###############################################################################
-# Digits dataset
-# --------------
-#
-# The digits dataset consists of 8x8
-# pixel images of digits. The ``images`` attribute of the dataset stores
-# 8x8 arrays of grayscale values for each image. We will use these arrays to
-# visualize the first 4 images. The ``target`` attribute of the dataset stores
-# the digit each image represents and this is included in the title of the 4
-# plots below.
-#
-# Note: if we were working from image files (e.g., 'png' files), we would load
-# them using :func:`matplotlib.pyplot.imread`.
-
-digits = datasets.load_digits()
-
-# _, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
-# for ax, image, label in zip(axes, digits.images, digits.target):
-#     ax.set_axis_off()
-#     ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
-#     ax.set_title("Training: %i" % label)
-
-###############################################################################
-# Classification
-# --------------
-#
-# To apply a classifier on this data, we need to flatten the images, turning
-# each 2-D array of grayscale values from shape ``(8, 8)`` into shape
-# ``(64,)``. Subsequently, the entire dataset will be of shape
-# ``(n_samples, n_features)``, where ``n_samples`` is the number of images and
-# ``n_features`` is the total number of pixels in each image.
-#
-# We can then split the data into train and test subsets and fit a support
-# vector classifier on the train samples. The fitted classifier can
-# subsequently be used to predict the value of the digit for the samples
-# in the test subset.
-
-# flatten the images
-n_samples = len(digits.images)
-data = digits.images.reshape((n_samples, -1))
-
-height, width, _ = digits.images.shape
-
-print("height={} width={}".format(height, width))
+#decision tree
+max_depth_list = [5, 10, 15, 20, 50, 100]
+h_params_tree = {}
+h_params_tree['max_depth'] = max_depth_list
+h_parameters = get_hyperparameter_combinations(h_params_tree)
+classifier_param_dict['tree'] = h_parameters
 
 #hyper parameter tuning
 #h_parameters = dict(product(gamma, C_range,repeat=1))
-h_parameters=list(product(gamma, C_range))
+# h_parameters=list(product(gamma, C_range))
 
-dataset_combination = list(product(test_range, dev_range))
+# dataset_combination = list(product(test_range, dev_range))
 
-for dataset in dataset_combination:
-    t_size = dataset[0]
-    d_size = dataset[1]
-    train_size = 1 - t_size - d_size   
+t_sizes =  [0.2]
+d_sizes  =  [0.2]
 
-    # Split data into 50% train and 30% test and 20% Validate subsets
-    X_train, X_dev, X_test, y_train, y_dev, y_test  = split_train_dev_test(
-        data, digits.target, test_size=t_size, dev_size=d_size
-    )
+for test_size in t_sizes:
+    for dev_size in d_sizes:
+        train_size = 1 - test_size - dev_size
 
-    optimal_gamma, optimal_C, optimal_model, optimal_accuracy = tune_hparams(X_train,y_train,X_dev,y_dev,h_parameters)
+        X_train, X_dev, X_test, y_train, y_dev, y_test = split_train_dev_test(X, y, test_size=test_size, dev_size=dev_size)
+        
+        X_train = preprocess_data(X_train)
+        X_test = preprocess_data(X_test)
+        X_dev = preprocess_data(X_dev)
 
-    print("optimal Gamma value={} and optimal C value={}".format(optimal_gamma,optimal_C))
+        binary_prediction = {}
+        model_preds = {}
+        for model_type in classifier_param_dict:
+            current_hparams = classifier_param_dict[model_type]
+            best_hparams, best_model_path, best_accuracy  = tune_hparams(X_train, y_train, X_dev, 
+            y_dev, current_hparams, model_type)        
 
-    #Either we store model in loop or we train it again based on size of model
-    #clf = train_model(X_train, y_train, {'gamma':optimal_gamma, 'C':optimal_C})
+            best_model = load(best_model_path) 
 
-    #Train accuracy
-    train_accuracy = predict_and_eval(optimal_model, X_train, y_train)
+            test_acc, test_f1, predicted_y = predict_and_eval(best_model, X_test, y_test)
+            train_acc, train_f1, _ = predict_and_eval(best_model, X_train, y_train)
+            dev_acc = best_accuracy
 
-    # Predict the value of the digit on the test subset
-    test_accuracy = predict_and_eval(optimal_model, X_test, y_test)
+            print("{}\ttest_size={:.2f} dev_size={:.2f} train_size={:.2f} train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}, test_f1={:.2f}".format(model_type, test_size, dev_size, train_size, train_acc, dev_acc, test_acc, test_f1))
 
-    train_sample = len(X_train)
-    dev_sample = len(X_dev)
-    test_sample = len(X_test)
+            binary_prediction[model_type] = y_test == predicted_y
+            model_preds[model_type] = predicted_y
+            
+            print("{}-Ground Truth Confusion metrics".format(model_type))
+            print(metrics.confusion_matrix(y_test, predicted_y))
 
-    print("Training sample={} dev Samples={} test Samples={}".format(train_sample, dev_sample, test_sample))
 
-    print("train_size={} train_accuracy={}, dev_size={} dev_accuracy={}, test_size={} test_accuracy={}".format(train_size,train_accuracy,d_size,optimal_accuracy,t_size,test_accuracy))
+print("Confusion metric".format())
+print(metrics.confusion_matrix(model_preds['svm'], model_preds['tree']))
 
-###############################################################################
-# Below we visualize the first 4 test samples and show their predicted
-# digit value in the title.
-
-# _, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
-# for ax, image, prediction in zip(axes, X_test, predicted):
-#     ax.set_axis_off()
-#     image = image.reshape(8, 8)
-#     ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
-#     ax.set_title(f"Prediction: {prediction}")
-
-###############################################################################
+print("binary predictions")
+print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False]))
+print("binary predictions -- normalized over true labels")
+print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False] , normalize='true'))
+print("binary predictions -- normalized over pred  labels")
+print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False] , normalize='pred'))
