@@ -1,4 +1,4 @@
-from utils import get_hyperparameter_combinations, train_test_dev_split,read_digits, tune_hparams, preprocess_data
+from utils import get_hyperparameter_combinations, split_train_dev_test,read_digits, tune_hparams, preprocess_data
 import os
 def test_for_hparam_cominations_count():
     # a test case to check that all possible combinations of paramers are indeed generated
@@ -57,7 +57,7 @@ def test_data_splitting():
     test_size = .1
     dev_size = .6
 
-    X_train, X_test, X_dev, y_train, y_test, y_dev = train_test_dev_split(X, y, test_size=test_size, dev_size=dev_size)
+    X_train, X_dev, X_test, y_train, y_dev, y_test = train_test_dev_split(X, y, test_size=test_size, dev_size=dev_size)
 
     assert (len(X_train) == 30) 
     assert (len(X_test) == 10)
