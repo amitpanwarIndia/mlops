@@ -1,12 +1,11 @@
 FROM python:3.10.12
 
-WORKDIR /home/caladmin/iitj-mlops/projects/mlops
+COPY . /digits
 
-COPY . /home/caladmin/iitj-mlops/projects/mlops
+WORKDIR /digits/
 
 RUN pip install -r requirements.txt
 
-VOLUME /home/caladmin/iitj-mlops/projects/mlops/models
+VOLUME /digits/models
 
-CMD python ex.py
-
+CMD ["python", "ex.py"]
