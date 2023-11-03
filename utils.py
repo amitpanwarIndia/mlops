@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from joblib import dump, load
 
 def split_train_dev_test(X, y, test_size, dev_size):
-    X_train_dev, X_test, Y_train_Dev, y_test = train_test_split(x, y, test_size=test_size, shuffle = True, random_state=1)    
+    X_train_dev, X_test, Y_train_Dev, y_test = train_test_split(X, y, test_size=test_size, shuffle = True, random_state=1)    
     X_train, X_dev, y_train, y_dev = train_test_split(X_train_dev, Y_train_Dev, test_size=dev_size/(1-test_size), shuffle = True, random_state=1)        
     return X_train, X_dev, X_test, y_train, y_dev, y_test
 
