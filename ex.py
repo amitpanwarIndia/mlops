@@ -26,11 +26,11 @@ h_parameters = get_hyperparameter_combinations(h_params)
 classifier_param_dict['svm'] = h_parameters
 
 #decision tree
-max_depth_list = [5, 10, 15, 20, 50, 100]
-h_params_tree = {}
-h_params_tree['max_depth'] = max_depth_list
-h_parameters = get_hyperparameter_combinations(h_params_tree)
-classifier_param_dict['tree'] = h_parameters
+# max_depth_list = [5, 10, 15, 20, 50, 100]
+# h_params_tree = {}
+# h_params_tree['max_depth'] = max_depth_list
+# h_parameters = get_hyperparameter_combinations(h_params_tree)
+# classifier_param_dict['tree'] = h_parameters
 
 #hyper parameter tuning
 #h_parameters = dict(product(gamma, C_range,repeat=1))
@@ -58,27 +58,38 @@ for test_size in t_sizes:
             best_hparams, best_model_path, best_accuracy  = tune_hparams(X_train, y_train, X_dev, 
             y_dev, current_hparams, model_type)        
 
-            best_model = load(best_model_path) 
+            url = 'http://localhost:5000/compare_images/' + best_model_path
+            image1 = open('image1.jpg', 'rb')
+            image2 = open('image2.jpg', 'rb')
 
-            test_acc, test_f1, predicted_y = predict_and_eval(best_model, X_test, y_test)
-            train_acc, train_f1, _ = predict_and_eval(best_model, X_train, y_train)
-            dev_acc = best_accuracy
+            files = {'image1': ('image1.jpg', image1), 'image2': ('image2.jpg', image2)}
+            response = requests.post(url, files=files)
 
-            print("{}\ttest_size={:.2f} dev_size={:.2f} train_size={:.2f} train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}, test_f1={:.2f}".format(model_type, test_size, dev_size, train_size, train_acc, dev_acc, test_acc, test_f1))
+            print(f'Result: {response.text}')
 
-            binary_prediction[model_type] = y_test == predicted_y
-            model_preds[model_type] = predicted_y
+            #best_model = load(best_model_path) 
+
+
+
+            # test_acc, test_f1, predicted_y = predict_and_eval(best_model, X_test, y_test)
+            # train_acc, train_f1, _ = predict_and_eval(best_model, X_train, y_train)
+            # dev_acc = best_accuracy
+
+            # print("{}\ttest_size={:.2f} dev_size={:.2f} train_size={:.2f} train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}, test_f1={:.2f}".format(model_type, test_size, dev_size, train_size, train_acc, dev_acc, test_acc, test_f1))
+
+            # binary_prediction[model_type] = y_test == predicted_y
+            # model_preds[model_type] = predicted_y
             
-            print("{}-Ground Truth Confusion metrics".format(model_type))
-            print(metrics.confusion_matrix(y_test, predicted_y))
+            # print("{}-Ground Truth Confusion metrics".format(model_type))
+            # print(metrics.confusion_matrix(y_test, predicted_y))
 
 
-print("Confusion metric".format())
-print(metrics.confusion_matrix(model_preds['svm'], model_preds['tree']))
+# print("Confusion metric".format())
+# print(metrics.confusion_matrix(model_preds['svm'], model_preds['tree']))
 
-print("binary predictions")
-print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False]))
-print("binary predictions -- normalized over true labels")
-print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False] , normalize='true'))
-print("binary predictions -- normalized over pred  labels")
-print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False] , normalize='pred'))
+# print("binary predictions")
+# print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False]))
+# print("binary predictions -- normalized over true labels")
+# print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False] , normalize='true'))
+# print("binary predictions -- normalized over pred  labels")
+# print(metrics.confusion_matrix(binary_prediction['svm'], binary_prediction['tree'], labels=[True, False] , normalize='pred'))
