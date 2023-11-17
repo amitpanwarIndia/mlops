@@ -10,4 +10,4 @@ docker run -v ./model_view:/digits/models digit_classification
 
 ls -lh model_view
 
-rm -rf model_view
+#rm -rf model_view
