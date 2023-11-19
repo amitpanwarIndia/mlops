@@ -25,7 +25,7 @@ jobs:
       # - name: Run experiment
       #   run: python ex.py
       # - run: echo "dummy print"
-      - name: docker image
-        run: |
-          chmod +x docker_run.sh
-          sh ./docker_run.sh
+      #- name: docker image
+      #  run: |
+      #   chmod +x docker_run.sh
+      #  sh ./docker_run.sh
