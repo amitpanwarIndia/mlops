@@ -6,6 +6,13 @@ WORKDIR /digits/
 
 RUN pip install -r requirements.txt
 
-VOLUME /digits/models
+# Expose the port the app runs on
+EXPOSE 5000
 
-CMD ["python", "ex.py"]
+# Define environment variables
+ENV FLASK_APP=/digits/flask/app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
+#VOLUME /digits/models
+
+CMD ["flask", "run"]
