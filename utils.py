@@ -1,6 +1,9 @@
 from sklearn import datasets, metrics, svm, tree
 from sklearn.model_selection import train_test_split
 from joblib import dump, load
+import base64
+from PIL import Image
+import io
 
 def split_train_dev_test(X, y, test_size, dev_size):
     X_train_dev, X_test, Y_train_Dev, y_test = train_test_split(X, y, test_size=test_size, shuffle = True, random_state=1)    
@@ -73,3 +76,11 @@ def preprocess_data(data):
     n_samples = len(data)
     data = data.reshape((n_samples, -1))
     return data
+
+def encode_image_to_base64(image):
+    image = Image.fromarray(image).convert('L')
+    img_byte_array = io.BytesIO()
+    image.save(img_byte_array, format='PNG')
+    img_byte_array = img_byte_array.getvalue()
+    encoded_image = base64.b64encode(img_byte_array).decode('utf-8')
+    return encoded_image
