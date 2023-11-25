@@ -18,14 +18,14 @@ jobs:
         run: |
           ls -r ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
-      # - name: Install dep
-      #   run:  pip3 install --no-cache-dir -r requirements.txt
-      # - name: Run Pytest
-      #   run: pytest
+      - name: Install dep
+        run:  pip3 install --no-cache-dir -r requirements.txt
+      - name: Run Pytest
+        run: pytest
       # - name: Run experiment
       #   run: python ex.py
       # - run: echo "dummy print"
-      - name: docker image
-        run: |
-          chmod +x docker_run.sh
-          sh ./docker_run.sh
+      #- name: docker image
+      #  run: |
+      #   chmod +x docker_run.sh
+      #  sh ./docker_run.sh

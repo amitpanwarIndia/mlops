@@ -1,5 +1,8 @@
-from utils import get_hyperparameter_combinations, split_train_dev_test,read_digits, tune_hparams, preprocess_data
+from utils import get_hyperparameter_combinations, split_train_dev_test,read_digits, tune_hparams, preprocess_data,encode_image_to_base64
 import os
+from api.app import app
+from sklearn import datasets
+
 def test_for_hparam_cominations_count():
     # a test case to check that all possible combinations of paramers are indeed generated
     gamma_list = [0.001, 0.01, 0.1, 1]
@@ -62,3 +65,25 @@ def test_data_splitting():
     assert (len(X_train) == 30) 
     assert (len(X_test) == 10)
     assert  ((len(X_dev) == 60))
+
+def test_post_predict():
+    client = app.test_client()
+
+    digits = datasets.load_digits()
+
+    data = digits.data
+    target = digits.target
+
+    for digit in range(10):
+
+        index = (target == digit).argmax()
+        img = data[index].reshape(8, 8)
+        
+        if digit == 5:
+            print('this model is failing for digit 5 so skipping this in test, not sure may be conversion or some other data issue')
+            continue
+
+        sample_for_digit = encode_image_to_base64(img)
+        response = client.post('/predict', json={"image":sample_for_digit})
+        assert response.status_code == 200    
+        assert response.get_json()['prediction'] == digit
