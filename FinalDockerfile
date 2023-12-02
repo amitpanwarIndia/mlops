@@ -1,0 +1,7 @@
+# FinalDockerfile
+FROM base:latest
+
+WORKDIR /digits/
+
+# Run unit tests using pytest
+CMD ["pytest", "tests"]

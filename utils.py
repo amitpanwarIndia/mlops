@@ -4,6 +4,10 @@ from joblib import dump, load
 import base64
 from PIL import Image
 import io
+from sklearn.preprocessing import Normalizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
+import numpy as np
 
 def split_train_dev_test(X, y, test_size, dev_size):
     X_train_dev, X_test, Y_train_Dev, y_test = train_test_split(X, y, test_size=test_size, shuffle = True, random_state=1)    
@@ -23,6 +27,11 @@ def train_model(X_train, y_train, parameters, model_type="svm"):
     if model_type == "tree":
         # Create a classifier: a decision tree classifier
         clf = tree.DecisionTreeClassifier
+
+    if model_type == "logistic":
+        # Create a classifier: a Logistic Regression Classifier
+        clf = LogisticRegression
+
     model = clf(**parameters)
     # train the model
     model.fit(X_train, y_train)
@@ -39,6 +48,16 @@ def tune_hparams(X_train, y_train, X_dev, y_dev, hyper_parameters, model_type="s
 
         #predict
         current_accuracy,_,_ = predict_and_eval(current_model, X_dev, y_dev)
+
+        if model_type == "logistic":
+            # save the best_model
+            model_path = "./model_lr/M22AIE202_lr_"+"_".join(["{}".format(v) for _,v in params.items()]) + ".joblib"
+            print(current_accuracy)
+            dump(current_model, model_path)
+            scores = cross_val_score(current_model, X_train, y_train, cv=5)
+            print(f"Mean Score: {np.mean(scores):.4f}")
+            print(f"Std Score: {np.std(scores):.4f}")
+
         if current_accuracy > optimal_accuracy:
             optimal_accuracy = current_accuracy
             optimal_params = params
@@ -75,7 +94,10 @@ def preprocess_data(data):
     # flatten the images
     n_samples = len(data)
     data = data.reshape((n_samples, -1))
-    return data
+
+    normalizer = Normalizer(norm='l2') #unit normalization
+    normalized_data = normalizer.transform(data)
+    return normalized_data
 
 def encode_image_to_base64(image):
     image = Image.fromarray(image).convert('L')

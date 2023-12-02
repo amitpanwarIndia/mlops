@@ -32,6 +32,13 @@ h_params_tree['max_depth'] = max_depth_list
 h_parameters = get_hyperparameter_combinations(h_params_tree)
 classifier_param_dict['tree'] = h_parameters
 
+#logistic regression classifier
+solver = ['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky', 'sag', 'saga']
+h_params_logistic = {}
+h_params_logistic['solver'] = solver
+h_parameters = get_hyperparameter_combinations(h_params_logistic)
+classifier_param_dict['logistic'] = h_parameters
+
 #hyper parameter tuning
 #h_parameters = dict(product(gamma, C_range,repeat=1))
 # h_parameters=list(product(gamma, C_range))
