@@ -6,7 +6,7 @@ import numpy as np
 import io
 
 app = Flask(__name__)
-app.run(debug=True)
+#app.run(debug=True) Removed debugging
 
 # print('here')
 svm_model = None
