@@ -1,7 +1,7 @@
 # mlops
 This repository is made for mlops course and ex.py is based upon plot_digits_classification from scikit-learn.
 
-It has conda setup, python and wsl on local environment.
+It has conda setup, python and wsl on local environment, commit for hitting actions.
 
 how to setup: install conda
 
